@@ -1,3 +1,3 @@
 # netpipe
 
-a distributed computing frameword based on netpipe
+a distributed computing framework based on netpipe
