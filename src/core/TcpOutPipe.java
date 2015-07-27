@@ -16,15 +16,42 @@ import util.Unit;
 import core.TcpInPipe.Reader;
 
 public class TcpOutPipe<E> implements OutPipe<E> {
+    private class Connection {
+        private Socket socket;
+        private int currQps; //  count of items sended every second
+        private int maxQps; 
+        
+        public Connection(Socket s) {
+            this.socket = s;
+            this.currQps = 0;
+            this.maxQps = 0;
+        }
+        
+        public Socket getSocket() {
+            return socket;
+        }
+        public int getCurrQps() {
+            return this.currQps;
+        }
+        public int getMaxQps() {
+            return this.maxQps;
+        }
+        public void incQps() {
+            this.currQps++;
+        }
+        public void resetQps() {
+            this.currQps = 0;
+        }
+    }
+    
     private InetSocketAddress address;
     private Serializer serializer;
     private ServerSocket socket;
-    private List<Socket> connections;
-    private byte[] buffer = new byte[2048];
+    private Connection minDelayConnection;
+    private List<Connection> connections;
     private Thread listenThread = new Thread(new Listener());
     private Thread sendThread = new Thread(new Sender());
     private BlockingQueue<E> dataQueue = new ArrayBlockingQueue<E>(128 * Unit.KB);
-    private BlockingQueue<PipeCmd> cmdQueue = new ArrayBlockingQueue<PipeCmd>(1024);
     
     private final Logger logger = new Logger().addPrinter(System.out);
     
@@ -42,7 +69,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
             return false;
         }
         
-        this.connections = new ArrayList<Socket>(); 
+        this.connections = new ArrayList<Connection>(); 
         
         this.listenThread.start();
         this.sendThread.start();
@@ -64,8 +91,11 @@ public class TcpOutPipe<E> implements OutPipe<E> {
         @Override
         public void run() {
             try {
-                Socket connection = socket.accept();
+                Connection connection = new Connection(socket.accept());
                 connections.add(connection);
+                if (minDelayConnection == null) {
+                    minDelayConnection = connection;
+                }
             } catch (Exception e) {
                 logger.log("out pipe accept exception:", e);
             }
@@ -76,35 +106,27 @@ public class TcpOutPipe<E> implements OutPipe<E> {
         @Override
         public void run() {
             try {
-                for (Socket conn : connections) {
+                boolean slowDown = true;
+                for (Connection conn : connections) {
+                    // too fast to send
+                    if (conn.getCurrQps() > conn.getMaxQps()) {
+                        continue;
+                    }
+                    
                     E e = dataQueue.take();
-                    conn.getOutputStream().write(serializer.encode(e));
+                    conn.getSocket().getOutputStream().write(serializer.encode(e));
+                    
+                    slowDown = false;
+                    conn.incQps();
+                }
+                
+                // if all consumers reach max qps, io thread must sleep
+                if (slowDown) {
+                    Thread.sleep(1);
                 }
             }
             catch (Exception e) {
                 logger.log("send data exception:", e);
-            }
-        }
-    }
-    
-    public class CmdHandler implements Runnable {
-        private Socket socket;
-        private byte[] buffer = new byte[2048];
-        
-        @Override
-        public void run() {
-            try {
-                int length = this.socket.getInputStream().read(buffer);
-                byte[] data = new byte[length];
-                System.arraycopy(data, length, buffer, 0, length);
-                PipeCmd cmd = (PipeCmd)serializer.decode(data);
-                if (cmd.getType() == PipeCmdType.SlowDown) {
-                    
-                } else if (cmd.getType() == PipeCmdType.SpeedUp) {
-                    
-                }
-            } catch (Exception e) {
-                logger.log("read outpipe connection data exception:", e);
             }
         }
     }

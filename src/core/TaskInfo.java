@@ -2,11 +2,13 @@ package core;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Timer;
 import java.lang.reflect.Method;
 
 public class TaskInfo {
     private Task task;
     private Method method;
+    private Timer qpsTimer;
     private List<PipeInfo> inPipe = new ArrayList<PipeInfo>();
     private List<PipeInfo> outPipe = new ArrayList<PipeInfo>();
     
