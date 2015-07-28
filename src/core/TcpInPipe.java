@@ -11,6 +11,7 @@ import util.SocketClient;
 import util.Unit;
 
 public class TcpInPipe<E> implements InPipe<E> {
+    private String name;
     private Serializer serializer;
     private byte[] buffer = new byte[2048];
     private long readedFrameCount = 0;
@@ -20,6 +21,10 @@ public class TcpInPipe<E> implements InPipe<E> {
     private BlockingQueue<PipeCmd> cmdQueue = new ArrayBlockingQueue<PipeCmd>(1024);
     
     private final Logger logger = new Logger().addPrinter(System.out);
+    
+    public TcpInPipe(String name) {
+        this.name = name;
+    }
     
     public boolean start(Address address) {
         if (this.client.start(address) == false) {
@@ -126,5 +131,10 @@ public class TcpInPipe<E> implements InPipe<E> {
         } catch (Exception e) {
             logger.log("in pipe write cmd exception:", e);
         }
+    }
+    
+    @Override
+    public String name() {
+        return name;
     }
 }

@@ -16,6 +16,12 @@ import util.Unit;
 import core.TcpInPipe.Reader;
 
 public class TcpOutPipe<E> implements OutPipe<E> {
+    private String name;
+    
+    public TcpOutPipe(String name) {
+        this.name = name;
+    }
+    
     private class Connection {
         private Socket socket;
         private int currQps; //  count of items sended every second
@@ -148,5 +154,9 @@ public class TcpOutPipe<E> implements OutPipe<E> {
         // TODO Auto-generated method stub
         return null;
     }
-
+    
+    @Override
+    public String name() {
+        return name;
+    }
 }

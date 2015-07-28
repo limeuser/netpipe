@@ -85,7 +85,7 @@ public class JobRunner {
             Set<PipeInfo> outPipes = new HashSet<PipeInfo>();
             mergePipeParams(children, inPipes, outPipes);
             
-            String taskJavaFile = TaskTemplate.getTaskClass(jobInfo.getJobClass().getName(), children, inPipes, outPipes);
+            String taskJavaFile = TaskTemplate.getTaskClassSourceCode(jobInfo, task, children, inPipes, outPipes);
             System.out.println(taskJavaFile);
         }
         
