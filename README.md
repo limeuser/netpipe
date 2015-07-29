@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # stream
 public class Runner {
     private OutPipe<java.lang.String> lines = new TcpOutPipe<java.lang.String>();
@@ -104,3 +105,8 @@ public class Runner {
         cmdThread.start();
     }
 }
+=======
+# netpipe
+
+a distributed computing framework based on netpipe
+>>>>>>> 26782bbb0c6371f32d3510f3f40ec35e56dae92f

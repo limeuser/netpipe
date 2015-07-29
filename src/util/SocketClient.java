@@ -7,6 +7,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 
+import cn.oasistech.util.Address;
+
 // socket client reconnect server when disconnected
 public class SocketClient {
     private InetSocketAddress serverAddress;

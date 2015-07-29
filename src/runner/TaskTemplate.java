@@ -49,15 +49,8 @@ public class TaskTemplate {
     
     private static final String taskMethodTemplate = 
             "    @Override\r\n" +
-            "    public void addWorker() {\r\n" +
-            "        Thread workerThread = new Thread(new Runnable(){\r\n" + 
-            "            @Override\r\n" + 
-            "            public void run() {\r\n" +
-            "                 @CallTaskMethod\r\n" + 
-            "            }\r\n" +
-            "        });\r\n" +
-            "        cmdThread.start();\r\n" + 
-            "        super.addWorker(workerThread);\r\n" +
+            "    public void runTask() {\r\n" +
+            "        @CallTaskMethod\r\n" + 
             "    }";
     
     public static final String getTaskMethod(TaskInfo task) {
@@ -88,8 +81,8 @@ public class TaskTemplate {
         return str.toString();
     }
     
-    private static final String inPipeTemplate = "    private InPipe<@E> @InPipeName = new TcpInPipe<@E>();";
-    private static final String outPipeTemplate = "    private OutPipe<@E> @OutPipeName = new TcpOutPipe<@E>();";
+    private static final String inPipeTemplate = "    private InPipe<@E> @InPipeName = new TcpInPipe<@E>(\"@InPipeName\");";
+    private static final String outPipeTemplate = "    private OutPipe<@E> @OutPipeName = new TcpOutPipe<@E>(\"@OutPipeName\");";
     
     public static final String getInPipeVars(Set<PipeInfo> inPipes) {
         StringBuilder str = new StringBuilder();

@@ -50,14 +50,11 @@ public class WordCounter {
     @Task(parent="count", in={"words"}, out={"wordCounts"})
     public void countCmd(@In InPipe<String> wordsPipe, @Out OutPipe<WordCount> wordCountsPipe, Context ctx) {
         while (true) {
-            PipeCmd cmd = wordsPipe.readInPipeCmd();
-            if (cmd.getType().equals(PipeCmdType.End)) {
-                for (String word : ctx.getMap().keySet()) {
-                    WordCount wc = new WordCount();
-                    wc.word = word;
-                    wc.count = (Integer)ctx.get(word);
-                    wordCountsPipe.write(wc);
-                }
+            for (String word : ctx.getMap().keySet()) {
+                WordCount wc = new WordCount();
+                wc.word = word;
+                wc.count = (Integer)ctx.get(word);
+                wordCountsPipe.write(wc);
             }
         }
     }
@@ -77,12 +74,8 @@ public class WordCounter {
     @Task(parent="merge", in={"wordCounts"})
     public void onWordCountsCmd(@In InPipe<WordCount> wordCounts, Context ctx) {
         while (true) {
-            PipeCmd cmd = wordCounts.readInPipeCmd();
-            if (cmd.getType().equals(PipeCmdType.End)) {
-                for (String word : ctx.getMap().keySet()) {
-                    System.out.println(word + ":" + ctx.get(word));
-                }
-                break;
+            for (String word : ctx.getMap().keySet()) {
+                System.out.println(word + ":" + ctx.get(word));
             }
         }
     }

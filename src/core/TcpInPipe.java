@@ -1,11 +1,11 @@
 package core;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import util.Address;
+import cn.oasistech.util.Address;
 import util.Logger;
 import util.SocketClient;
 import util.Unit;
@@ -13,12 +13,13 @@ import util.Unit;
 public class TcpInPipe<E> implements InPipe<E> {
     private String name;
     private Serializer serializer;
+    private SocketClient client;
+    private Thread readThread;
+    private BlockingQueue<E> dataQueue;
+    
+    private int capacity = 128 * Unit.KB;
+    
     private byte[] buffer = new byte[2048];
-    private long readedFrameCount = 0;
-    private SocketClient client = new SocketClient();
-    private Thread readThread = new Thread(new Reader());
-    private BlockingQueue<E> dataQueue = new ArrayBlockingQueue<E>(128 * Unit.KB);
-    private BlockingQueue<PipeCmd> cmdQueue = new ArrayBlockingQueue<PipeCmd>(1024);
     
     private final Logger logger = new Logger().addPrinter(System.out);
     
@@ -27,11 +28,15 @@ public class TcpInPipe<E> implements InPipe<E> {
     }
     
     public boolean start(Address address) {
+        this.dataQueue = new ArrayBlockingQueue<E>(capacity);
+        
+        this.client = new SocketClient();
         if (this.client.start(address) == false) {
             this.client = null;
             return false;
         }
         
+        this.readThread = new Thread(new Reader());
         readThread.start();
         
         return true;
@@ -49,21 +54,6 @@ public class TcpInPipe<E> implements InPipe<E> {
         public void run() {
             while (true) {
                 readFrame();
-                readedFrameCount++;
-                // monitor queue size to implement backpress process
-                if (dataQueue.remainingCapacity() < 20480) {
-                    PipeCmd cmd = new PipeCmd();
-                    cmd.setType(PipeCmdType.SlowDown);
-                    writeOutPipeCmd(cmd);
-                }
-                
-                if (dataQueue.size() * 3 < dataQueue.remainingCapacity()) {
-                    if (readedFrameCount % 10000 == 0) {
-                        PipeCmd cmd = new PipeCmd();
-                        cmd.setType(PipeCmdType.SpeedUp);
-                        writeOutPipeCmd(cmd);
-                    }
-                }
             }
         }
     }
@@ -78,28 +68,14 @@ public class TcpInPipe<E> implements InPipe<E> {
     
     private void doReadFrame() throws IOException, InterruptedException {
         int length = client.recv(buffer);
-        if (length > 4) {
-            ByteBuffer bf = ByteBuffer.wrap(buffer);
-            int type = bf.getShort();
-            int valueLength = bf.getShort();
-            
-            if (length - 4 >= valueLength) {
-                TLVFrame frame = new TLVFrame();
-                frame.setType(type);
-                frame.setLength(valueLength);
-                frame.setValue(new byte[valueLength]);
-                System.arraycopy(buffer, 4, frame.getValue(), 0, valueLength);
-                
-                Object value = serializer.decode(frame.getValue());
-                if (type == ValueType.Data.ordinal()) {
-                    dataQueue.put((E) value);
-                } else if (type == ValueType.Cmd.ordinal()) {
-                    cmdQueue.put((PipeCmd) value);
-                } else {
-                    logger.log("invalid message type:%d", type);
-                }
+        List<TLVFrame> frames = TLVFrame.parseTLVFrame(buffer, length);
+        for (TLVFrame frame : frames) {
+            if (frame.getType() == ValueType.Data.ordinal()) {
+                dataQueue.put((E) serializer.decode(frame.getValue()));
+            } else {
+                logger.log("invalid message type:%d", frame.getType());
             }
-        } 
+        }
     }
     
     @Override
@@ -114,27 +90,17 @@ public class TcpInPipe<E> implements InPipe<E> {
     }
 
     @Override
-    public PipeCmd readInPipeCmd() {
-        while (true) {
-            try {
-                return cmdQueue.take();
-            } catch (InterruptedException e) {
-                logger.log("cmd queue take interrupted");
-            } 
-        }
-    }
-
-    @Override
-    public void writeOutPipeCmd(PipeCmd cmd) {
-        try {
-            client.send(serializer.encode(cmd));
-        } catch (Exception e) {
-            logger.log("in pipe write cmd exception:", e);
-        }
+    public String name() {
+        return name;
     }
     
     @Override
-    public String name() {
-        return name;
+    public int size() {
+        return dataQueue.size();
+    }
+    
+    @Override
+    public int capacity() {
+        return capacity;
     }
 }
