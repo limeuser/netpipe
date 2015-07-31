@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 import core.*;
-import util.*;
+import cn.oasistech.util.Logger;
 
 public class JobRunner {
     private final static Logger logger = new Logger().addPrinter(System.out);

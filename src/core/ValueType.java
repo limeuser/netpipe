@@ -6,4 +6,5 @@ public enum ValueType {
     CreateWorker,
     DestroyWorkder,
     SetMaxQps,
+    SwitchOutPipe,
 }

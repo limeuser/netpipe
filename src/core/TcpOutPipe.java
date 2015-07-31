@@ -4,13 +4,15 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import cn.oasistech.util.Address;
-import util.Logger;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import util.Unit;
+import cn.oasistech.util.Address;
+import cn.oasistech.util.ByteUtil;
+import cn.oasistech.util.Logger;
 
 public class TcpOutPipe<E> implements OutPipe<E> {
     private String name;
@@ -28,9 +30,11 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     private Thread listenThread;
     private Thread sendThread;
     
-    private BlockingQueue<E> dataQueue;
+    private AbstractQueue<E> dataQueue;
     
+    private final byte[] outBuffer = new byte[1024 * 10];
     private int capacity = 128 * Unit.KB;
+    private int inQps = 0;
     
     private final Logger logger = new Logger().addPrinter(System.out);
     
@@ -48,7 +52,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
             return false;
         }
         
-        this.dataQueue = new ArrayBlockingQueue<E>(capacity);
+        this.dataQueue = new ConcurrentLinkedQueue<E>();
         this.connections = new ArrayList<Connection>(); 
         
         this.listenThread = new Thread(new Listener());
@@ -92,13 +96,17 @@ public class TcpOutPipe<E> implements OutPipe<E> {
                     continue;
                 }
                 
-                E e = take();
-                if (e != null) {
-                    boolean success = trySend(conn.getSocket(), e);
-                    if (!success) {
-                        close(conn.getSocket());
-                        connections.remove(conn);
-                    }
+                E e = dataQueue.poll();
+                // queue is empty
+                if (e == null) {
+                    continue;
+                }
+                
+                boolean success = trySend(conn.getSocket(), e);
+                if (success == false) {
+                    close(conn.getSocket());
+                    connections.remove(conn);
+                    continue;
                 }
                 
                 slowDown = false;
@@ -113,7 +121,18 @@ public class TcpOutPipe<E> implements OutPipe<E> {
         
         private boolean trySend(Socket socket, E e) {
             try {
-                socket.getOutputStream().write(serializer.encode(e));
+                byte[] data = serializer.encode(e);
+                int frameLength = data.length + TLVFrame.HeadLength;
+                byte[] buffer = outBuffer;
+                if (frameLength > outBuffer.length) {
+                    buffer = new byte[frameLength];
+                }
+                
+                ByteUtil.writeByBig(buffer, 0, (short)ValueType.Data.ordinal());
+                ByteUtil.writeByBig(buffer, 2, (short)data.length);
+                ByteUtil.copy(buffer, 4, data);
+                
+                socket.getOutputStream().write(buffer, 0, frameLength);
                 return true;
             } catch (IOException e1) {
                 logger.log("send data from %s to %s exception", socket.getLocalSocketAddress().toString(), socket.getRemoteSocketAddress().toString());
@@ -129,15 +148,6 @@ public class TcpOutPipe<E> implements OutPipe<E> {
             }
         }
         
-        private E take() {
-            try {
-                return dataQueue.take();
-            } catch (Exception e) {
-                logger.log("take data from out pipe queue %s exception", name);
-                return null;
-            }
-        }
-        
         private void sleep() {
             try {
                 Thread.sleep(1);
@@ -150,6 +160,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     @Override
     public void write(E e) {
         dataQueue.add(e);
+        inQps++;
     }
     
     @Override
@@ -162,6 +173,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
         for (Connection conn : connections) {
             conn.resetQps();
         }
+        inQps = 0;
     }
     
     @Override
@@ -215,5 +227,19 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     @Override
     public int capacity() {
         return capacity;
+    }
+    
+    @Override
+    public int inQps() {
+        return this.inQps;
+    }
+    
+    @Override
+    public int outQps() {
+        int total = 0;
+        for (Connection con : connections) {
+            total += con.currQps;
+        }
+        return total;
     }
 }

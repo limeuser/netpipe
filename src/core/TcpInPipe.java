@@ -1,23 +1,26 @@
 package core;
 
 import java.io.IOException;
+import java.util.AbstractQueue;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-import cn.oasistech.util.Address;
-import util.Logger;
-import util.SocketClient;
+import cn.oasistech.util.SocketClient;
+import cn.oasistech.util.Logger;
 import util.Unit;
+import cn.oasistech.util.Address;
 
 public class TcpInPipe<E> implements InPipe<E> {
     private String name;
     private Serializer serializer;
     private SocketClient client;
     private Thread readThread;
-    private BlockingQueue<E> dataQueue;
+    private AbstractQueue<E> dataQueue;
     
     private int capacity = 128 * Unit.KB;
+    
+    private int inQps = 0;
+    private int outQps = 0;
     
     private byte[] buffer = new byte[2048];
     
@@ -28,10 +31,10 @@ public class TcpInPipe<E> implements InPipe<E> {
     }
     
     public boolean start(Address address) {
-        this.dataQueue = new ArrayBlockingQueue<E>(capacity);
+        this.dataQueue = new ConcurrentLinkedQueue<E>();
         
         this.client = new SocketClient();
-        if (this.client.start(address) == false) {
+        if (this.client.connect(address) == false) {
             this.client = null;
             return false;
         }
@@ -44,7 +47,7 @@ public class TcpInPipe<E> implements InPipe<E> {
     
     public void stop() {
         if (this.client != null) {
-            this.client.stop();
+            this.client.disconnect();
         }
     }
     
@@ -71,7 +74,8 @@ public class TcpInPipe<E> implements InPipe<E> {
         List<TLVFrame> frames = TLVFrame.parseTLVFrame(buffer, length);
         for (TLVFrame frame : frames) {
             if (frame.getType() == ValueType.Data.ordinal()) {
-                dataQueue.put((E) serializer.decode(frame.getValue()));
+                dataQueue.offer((E) serializer.decode(frame.getValue()));
+                inQps++;
             } else {
                 logger.log("invalid message type:%d", frame.getType());
             }
@@ -81,9 +85,15 @@ public class TcpInPipe<E> implements InPipe<E> {
     @Override
     public E read() {
         while (true) {
+            E e = dataQueue.poll();
+            if (e != null) {
+                outQps++;
+                return e;
+            }
+            
             try {
-                return dataQueue.take();
-            } catch (InterruptedException e) {
+                Thread.sleep(1);
+            } catch (InterruptedException ex) {
                 logger.log("data queue take interrupted");
             } 
         }
@@ -102,5 +112,26 @@ public class TcpInPipe<E> implements InPipe<E> {
     @Override
     public int capacity() {
         return capacity;
+    }
+    
+    @Override
+    public int inQps() {
+        return inQps;
+    }
+    
+    @Override
+    public int outQps() {
+        return outQps;
+    }
+    
+    @Override
+    public void resetStat() {
+        inQps = 0;
+        outQps = 0;
+    }
+    
+    @Override
+    public void switchOutPipe(String outPipeAddress) {
+        client.reconnect(Address.parse(outPipeAddress));
     }
 }

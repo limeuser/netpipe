@@ -1,6 +1,23 @@
 package runner;
 
 public class TaskCmd {
+    public class SwitchOutPipe {
+        private String inPipeName;
+        private String outPipeAddress;
+        public String getInPipeName() {
+            return inPipeName;
+        }
+        public void setInPipeName(String inPipeName) {
+            this.inPipeName = inPipeName;
+        }
+        public String getOutPipeAddress() {
+            return outPipeAddress;
+        }
+        public void setOutPipeAddress(String outPipeAddress) {
+            this.outPipeAddress = outPipeAddress;
+        }
+    }
+    
     public class SetMaxQps {
         private String outPipeName;
         private String address;

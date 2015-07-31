@@ -6,4 +6,5 @@ public class Config {
     
     public final static String Task = "task";
     public final static String Job = "job";
+    
 }

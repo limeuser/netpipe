@@ -2,7 +2,7 @@ package runner;
 
 import java.util.List;
 
-import util.Logger;
+import cn.oasistech.util.Logger;
 import cn.oasistech.agent.AgentProtocol;
 import cn.oasistech.agent.IdFrame;
 import cn.oasistech.agent.client.AgentAsynRpc;
@@ -26,6 +26,9 @@ public class TaskMsgHandler implements AgentRpcHandler {
                 } else if (frame.getType() == ValueType.SetMaxQps.ordinal()) {
                     TaskCmd.SetMaxQps setMaxQps = (TaskCmd.SetMaxQps) task.getAgentSerlizer().decode(frame.getValue());
                     task.setMaxQps(setMaxQps.getOutPipeName(), setMaxQps.getAddress(), setMaxQps.getQps());
+                } else if (frame.getType() == ValueType.SwitchOutPipe.ordinal()) {
+                    TaskCmd.SwitchOutPipe switchOutPipe = (TaskCmd.SwitchOutPipe) task.getAgentSerlizer().decode(frame.getValue());
+                    task.switchOutPipe(switchOutPipe.getInPipeName(), switchOutPipe.getOutPipeAddress());
                 }
             }
         } else {

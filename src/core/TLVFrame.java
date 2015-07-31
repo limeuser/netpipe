@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TLVFrame {
+    public final static int HeadLength = 4;
+    
     public int getType() {
         return type;
     }
@@ -32,17 +34,17 @@ public class TLVFrame {
         int remainLength = length;
         ByteBuffer bf = ByteBuffer.wrap(buffer);
         
-        while (remainLength > 4) {
+        while (remainLength > HeadLength) {
             int type = bf.getShort();
             int valueLength = bf.getShort();
-            remainLength += 4;
+            remainLength += HeadLength;
             
-            if (remainLength - 4 >= valueLength) {
+            if (remainLength - HeadLength >= valueLength) {
                 TLVFrame frame = new TLVFrame();
                 frame.setType(type);
                 frame.setLength(valueLength);
                 frame.setValue(new byte[valueLength]);
-                System.arraycopy(buffer, 4, frame.getValue(), 0, valueLength);
+                System.arraycopy(buffer, HeadLength, frame.getValue(), 0, valueLength);
                 
                 frames.add(frame);
                 remainLength += valueLength;

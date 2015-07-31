@@ -6,12 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 
+import cn.oasistech.agent.AgentProtocol;
+import cn.oasistech.agent.GetIdResponse;
 import cn.oasistech.agent.client.AgentAsynRpc;
+import cn.oasistech.agent.client.AgentSyncRpc;
 import cn.oasistech.util.Address;
 import cn.oasistech.util.Tag;
 import core.InPipe;
 import core.OutPipe;
 import core.Serializer;
+import cn.oasistech.util.Logger;
 
 public abstract class TaskRunner {
     private String jobName;
@@ -21,8 +25,11 @@ public abstract class TaskRunner {
     private List<InPipe<?>> ins;
     private List<OutPipe<?>> outs;
     private Serializer agentSerlizer;
-    private AgentAsynRpc agentRpc;
+    private AgentAsynRpc agentAsynRpc;
+    private AgentSyncRpc agentSyncRpc;
     private Map<String, Integer> services = new HashMap<String, Integer>();
+    
+    private static final Logger logger = new Logger().addPrinter(System.out);
     
     public TaskRunner(String jobName, String taskName) {
         this.jobName = jobName;
@@ -30,14 +37,31 @@ public abstract class TaskRunner {
         
         this.statTimer = new Timer();
         this.statTimer.schedule(new StatTask(this), 0, 1000);
-        this.agentRpc = new AgentAsynRpc();
-        this.agentRpc.start(Address.parse("tcp://127.0.0.1:6953"), new TaskMsgHandler());
+        this.agentSyncRpc = new AgentSyncRpc();
+        this.agentSyncRpc.start(Address.parse("tcp://127.0.0.1:6953"));
+        
+        this.agentAsynRpc = new AgentAsynRpc();
+        this.agentAsynRpc.start(Address.parse("tcp://127.0.0.1:6953"), new TaskMsgHandler());
         
         List<Tag> tags = new ArrayList<Tag>();
         tags.add(new Tag(Config.Job, this.jobName));
         tags.add(new Tag(Config.Task, this.taskName));
+        tags.add(new Tag(AgentProtocol.PublicTag.clienttype.name(), AgentProtocol.ClientType.asyn.name()));
+        this.agentAsynRpc.setTag(tags);
         
-        this.agentRpc.setTag(tags);
+        connectTaskManager();
+    }
+    
+    private void connectTaskManager() {
+        while (true) {
+            GetIdResponse response = this.agentSyncRpc.getId(new Tag(AgentProtocol.PublicTag.servicename.name(), Config.DpipeManager));
+            if (response.getIds().size() == 1) {
+                this.services.put(Config.DpipeManager, response.getIds().get(0));
+                break;
+            } else {
+                logger.log("can't get manager");
+            }
+        }
     }
     
     protected abstract void init();
@@ -66,6 +90,15 @@ public abstract class TaskRunner {
         for (OutPipe<?> out : outs) {
             if (out.name().equals(outPipeName)) {
                 out.setMaxQps(Address.parse(peerAddress), qps);
+            }
+        }
+    }
+    
+    public void switchOutPipe(String inPipeName, String outPipeAddress) {
+        for (InPipe<?> in : ins) {
+            if (in.name().equals(inPipeName)) {
+                in.switchOutPipe(outPipeAddress);
+                break;
             }
         }
     }
@@ -101,10 +134,10 @@ public abstract class TaskRunner {
         this.outs.add(out);
     }
     public AgentAsynRpc getAgentRpc() {
-        return agentRpc;
+        return agentAsynRpc;
     }
     public void setAgentRpc(AgentAsynRpc agentRpc) {
-        this.agentRpc = agentRpc;
+        this.agentAsynRpc = agentRpc;
     }
 
     public List<Thread> getWorks() {
