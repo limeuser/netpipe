@@ -1,8 +1,8 @@
 package runner;
 
 import java.util.TimerTask;
-
-import cn.oasistech.util.Tag;
+import msg.TaskStatus;
+import msg.PipeStatus;
 import core.InPipe;
 import core.OutPipe;
 
@@ -15,32 +15,35 @@ public class StatTask extends TimerTask {
     
     @Override
     public void run() {
-        // report stat inforamtion for backpress
-        TaskStat stat = new TaskStat();
-        stat.setJobName(task.getJobName());
-        stat.setTaskName(task.getTaskName());
-        stat.setWorkerCount(task.getWorks().size());
+        // report task running status
+        TaskStatus taskStatus = new TaskStatus();
+        taskStatus.setJobName(task.getJobName());
+        taskStatus.setTaskName(task.getTaskName());
+        taskStatus.setTaskId(task.getTaskId());
+        taskStatus.setWorkerCount(task.getWorks().size());
         
         for (InPipe<?> in : task.getIns()) {
-            TaskStat.PipeStat pipeStat = stat.new PipeStat();
-            pipeStat.setName(in.name());
-            pipeStat.setSize(in.size());
-            pipeStat.setInQps(in.inQps());
-            pipeStat.setOutQps(in.outQps());
-            pipeStat.setCapacity(in.capacity());
-            stat.getPipeStat().add(pipeStat);
+            PipeStatus pipeStatus = new PipeStatus();
+            pipeStatus.setName(in.name());
+            pipeStatus.setSize(in.size());
+            pipeStatus.setInQps(in.inQps());
+            pipeStatus.setOutQps(in.outQps());
+            pipeStatus.setCapacity(in.capacity());
+            
+            taskStatus.getPipeStatus().add(pipeStatus);
         }
         for (OutPipe<?> out : task.getOuts()) {
-            TaskStat.PipeStat pipeStat = stat.new PipeStat();
-            pipeStat.setName(out.name());
-            pipeStat.setSize(out.size());
-            pipeStat.setInQps(out.inQps());
-            pipeStat.setOutQps(out.outQps());
-            pipeStat.setCapacity(out.capacity());
-            stat.getPipeStat().add(pipeStat);
+            PipeStatus pipeStatus = new PipeStatus();
+            pipeStatus.setName(out.name());
+            pipeStatus.setSize(out.size());
+            pipeStatus.setInQps(out.inQps());
+            pipeStatus.setOutQps(out.outQps());
+            pipeStatus.setCapacity(out.capacity());
+            
+            taskStatus.getPipeStatus().add(pipeStatus);
         }
         
-        this.task.getAgentRpc().sendTo(task.getServices().get(Config.DpipeManager), task.getAgentSerlizer().encode(stat));
+        this.task.getAgentRpc().sendTo(task.getServices().get(Config.DpipeManager), task.getAgentSerlizer().encode(taskStatus));
         
         for (OutPipe<?> out : task.getOuts()) {
             out.resetStat();

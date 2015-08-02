@@ -2,13 +2,15 @@ package runner;
 
 import java.util.List;
 
+import msg.TaskCmd;
+import msg.ValueType;
+
 import cn.oasistech.util.Logger;
 import cn.oasistech.agent.AgentProtocol;
 import cn.oasistech.agent.IdFrame;
 import cn.oasistech.agent.client.AgentAsynRpc;
 import cn.oasistech.agent.client.AgentRpcHandler;
 import core.TLVFrame;
-import core.ValueType;
 
 public class TaskMsgHandler implements AgentRpcHandler {
     private TaskRunner task;
@@ -29,6 +31,8 @@ public class TaskMsgHandler implements AgentRpcHandler {
                 } else if (frame.getType() == ValueType.SwitchOutPipe.ordinal()) {
                     TaskCmd.SwitchOutPipe switchOutPipe = (TaskCmd.SwitchOutPipe) task.getAgentSerlizer().decode(frame.getValue());
                     task.switchOutPipe(switchOutPipe.getInPipeName(), switchOutPipe.getOutPipeAddress());
+                } else if (frame.getType() == ValueType.ReportStatus.ordinal()) {
+                	rpc.sendTo(idFrame.getId(), task.getAgentSerlizer().encode(task.getStatus()));
                 }
             }
         } else {

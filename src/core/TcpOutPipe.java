@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import msg.ValueType;
+
 import util.Unit;
 import cn.oasistech.util.Address;
 import cn.oasistech.util.ByteUtil;

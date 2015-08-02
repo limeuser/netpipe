@@ -5,6 +5,8 @@ import java.util.AbstractQueue;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import msg.ValueType;
+
 import cn.oasistech.util.SocketClient;
 import cn.oasistech.util.Logger;
 import util.Unit;

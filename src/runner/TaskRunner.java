@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 
+import msg.PipeStatus;
+import msg.TaskStatus;
+
 import cn.oasistech.agent.AgentProtocol;
 import cn.oasistech.agent.GetIdResponse;
 import cn.oasistech.agent.client.AgentAsynRpc;
@@ -20,8 +23,9 @@ import cn.oasistech.util.Logger;
 public abstract class TaskRunner {
     private String jobName;
     private String taskName;
+    private int taskId;
     private Timer statTimer;
-    private List<Thread> works;
+    private List<Thread> workers;
     private List<InPipe<?>> ins;
     private List<OutPipe<?>> outs;
     private Serializer agentSerlizer;
@@ -31,9 +35,10 @@ public abstract class TaskRunner {
     
     private static final Logger logger = new Logger().addPrinter(System.out);
     
-    public TaskRunner(String jobName, String taskName) {
+    public TaskRunner(String jobName, String taskName, int taskId) {
         this.jobName = jobName;
         this.taskName = taskName;
+        this.taskId = taskId;
         
         this.statTimer = new Timer();
         this.statTimer.schedule(new StatTask(this), 0, 1000);
@@ -76,12 +81,12 @@ public abstract class TaskRunner {
         });
         
         worker.start();
-        this.works.add(worker);
+        this.workers.add(worker);
     }
     
     public void destoryWorker() {
-        if (this.works.size() > 0) {
-            Thread thread = works.remove(0);
+        if (this.workers.size() > 0) {
+            Thread thread = workers.remove(0);
             thread.stop();
         }
     }
@@ -101,6 +106,38 @@ public abstract class TaskRunner {
                 break;
             }
         }
+    }
+    
+    // get task running status
+    public TaskStatus getStatus() {
+        TaskStatus taskStatus = new TaskStatus();
+        taskStatus.setJobName(jobName);
+        taskStatus.setTaskName(taskName);
+        taskStatus.setTaskId(taskId);
+        taskStatus.setWorkerCount(workers.size());
+        
+        for (InPipe<?> in : ins) {
+            PipeStatus pipeStatus = new PipeStatus();
+            pipeStatus.setName(in.name());
+            pipeStatus.setSize(in.size());
+            pipeStatus.setInQps(in.inQps());
+            pipeStatus.setOutQps(in.outQps());
+            pipeStatus.setCapacity(in.capacity());
+            
+            taskStatus.getPipeStatus().add(pipeStatus);
+        }
+        for (OutPipe<?> out : outs) {
+            PipeStatus pipeStatus = new PipeStatus();
+            pipeStatus.setName(out.name());
+            pipeStatus.setSize(out.size());
+            pipeStatus.setInQps(out.inQps());
+            pipeStatus.setOutQps(out.outQps());
+            pipeStatus.setCapacity(out.capacity());
+            
+            taskStatus.getPipeStatus().add(pipeStatus);
+        }
+        
+        return taskStatus;
     }
     
     public String getJobName() {
@@ -141,11 +178,11 @@ public abstract class TaskRunner {
     }
 
     public List<Thread> getWorks() {
-        return works;
+        return workers;
     }
 
     public void setWorks(List<Thread> works) {
-        this.works = works;
+        this.workers = works;
     }
 
     public Map<String, Integer> getServices() {
@@ -162,5 +199,8 @@ public abstract class TaskRunner {
 
     public void setAgentSerlizer(Serializer agentSerlizer) {
         this.agentSerlizer = agentSerlizer;
+    }
+    public int getTaskId() {
+    	return this.taskId;
     }
 }

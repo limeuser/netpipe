@@ -1,4 +1,4 @@
-package core;
+package msg;
 
 public enum ValueType {
     TLV,
@@ -7,4 +7,5 @@ public enum ValueType {
     DestroyWorkder,
     SetMaxQps,
     SwitchOutPipe,
+    ReportStatus,;
 }
