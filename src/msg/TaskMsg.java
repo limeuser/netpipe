@@ -1,6 +1,7 @@
 package msg;
 
-public class TaskCmd {
+
+public class TaskMsg {
     public class SwitchOutPipe {
         private String inPipeName;
         private String outPipeAddress;

@@ -1,9 +1,10 @@
 package runner;
 
+import core.generator.JobGenerator;
 import job.WordCounter;
 
 public class Main {
     public static void main(String[] args) {
-        JobRunner.run(WordCounter.class);
+        JobGenerator.generate(WordCounter.class);
     }
 }

@@ -1,36 +1,20 @@
 package msg;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+import core.PipeStatus;
 
 public class TaskStatus {
-    private String jobName;
-    private String taskName;
     private int taskId;
     private int workerCount;
-    private List<PipeStatus> pipeStatus = new ArrayList<PipeStatus>();
+    private Map<String, PipeStatus> pipeStatus = new HashMap<String, PipeStatus>();
     
-    public String getJobName() {
-        return jobName;
-    }
-
-    public void setJobName(String jobName) {
-        this.jobName = jobName;
-    }
-
-    public String getTaskName() {
-        return taskName;
-    }
-
-    public void setTaskName(String taskName) {
-        this.taskName = taskName;
-    }
-
-    public List<PipeStatus> getPipeStatus() {
+    public Map<String, PipeStatus> getPipeStatus() {
         return pipeStatus;
     }
 
-    public void setPipeStatus(List<PipeStatus> pipeStatus) {
+    public void setPipeStatus(Map<String, PipeStatus> pipeStatus) {
         this.pipeStatus = pipeStatus;
     }
     
@@ -43,10 +27,10 @@ public class TaskStatus {
     }
 
     public int getTaskId() {
-		return taskId;
-	}
+        return taskId;
+    }
 
-	public void setTaskId(int taskId) {
-		this.taskId = taskId;
-	}
+    public void setTaskId(int taskId) {
+        this.taskId = taskId;
+    }
 }

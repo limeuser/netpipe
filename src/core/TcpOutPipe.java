@@ -8,9 +8,7 @@ import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import msg.ValueType;
-
+import msg.MsgType;
 import util.Unit;
 import cn.oasistech.util.Address;
 import cn.oasistech.util.ByteUtil;
@@ -18,27 +16,27 @@ import cn.oasistech.util.Logger;
 
 public class TcpOutPipe<E> implements OutPipe<E> {
     private String name;
-    
-    public TcpOutPipe(String name) {
-        this.name = name;
-    }
-    
+    private PipeStatus status;
     private Serializer serializer;
     
+    private Thread sendThread;
+    private Thread listenThread;
+    
+    private AbstractQueue<E> dataQueue;
     private ServerSocket boundSocket;
     private InetSocketAddress boundAddress;
     private List<Connection> connections;
     
-    private Thread listenThread;
-    private Thread sendThread;
-    
-    private AbstractQueue<E> dataQueue;
     
     private final byte[] outBuffer = new byte[1024 * 10];
     private int capacity = 128 * Unit.KB;
     private int inQps = 0;
     
     private final Logger logger = new Logger().addPrinter(System.out);
+    
+    public TcpOutPipe(String name) {
+        this.name = name;
+    }
     
     public boolean start(Address address) {
         this.boundAddress = address.toSocketAddress();
@@ -62,6 +60,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
         
         this.sendThread = new Thread(new Sender());
         this.sendThread.start();
+        
         
         return true;
     }
@@ -130,7 +129,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
                     buffer = new byte[frameLength];
                 }
                 
-                ByteUtil.writeByBig(buffer, 0, (short)ValueType.Data.ordinal());
+                ByteUtil.writeByBig(buffer, 0, (short)MsgType.Data.ordinal());
                 ByteUtil.writeByBig(buffer, 2, (short)data.length);
                 ByteUtil.copy(buffer, 4, data);
                 
@@ -171,7 +170,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     }
     
     @Override
-    public void resetStat() {
+    public void resetQps() {
         for (Connection conn : connections) {
             conn.resetQps();
         }
@@ -220,28 +219,10 @@ public class TcpOutPipe<E> implements OutPipe<E> {
             this.currQps = 0;
         }
     }
+
     
     @Override
-    public int size() {
-        return dataQueue.size();
-    }
-    
-    @Override
-    public int capacity() {
-        return capacity;
-    }
-    
-    @Override
-    public int inQps() {
-        return this.inQps;
-    }
-    
-    @Override
-    public int outQps() {
-        int total = 0;
-        for (Connection con : connections) {
-            total += con.currQps;
-        }
-        return total;
+    public PipeStatus getStatus() {
+        return this.status;
     }
 }

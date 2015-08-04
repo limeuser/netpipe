@@ -1,12 +1,8 @@
-package runner;
+package core.generator;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
-
-import core.JobInfo;
-import core.PipeInfo;
-import core.TaskInfo;
 
 public class TaskTemplate {
     private static final String taskClassTemplate = 
@@ -25,7 +21,7 @@ public class TaskTemplate {
             "@TaskMethods\r\n" +
             "}";
     
-    public static final String getTaskClassSourceCode(JobInfo jobInfo, TaskInfo taskInfo, List<TaskInfo> tasks, Set<PipeInfo> inPipes, Set<PipeInfo> outPipes) {
+    public static final String getTaskClassSourceCode(JobDes jobInfo, TaskDes taskInfo, List<TaskDes> tasks, Set<PipeDes> inPipes, Set<PipeDes> outPipes) {
         return taskClassTemplate
         .replaceAll("@JobClassName", jobInfo.getJobClass().getName())
         .replaceAll("@JobName", jobInfo.getJob().name())
@@ -37,9 +33,9 @@ public class TaskTemplate {
         .replaceAll("@AddOutPipes", addOutPipes(outPipes));
     }
     
-    private static final String getAllTaskMethod(List<TaskInfo> tasks) {
+    private static final String getAllTaskMethod(List<TaskDes> tasks) {
         StringBuilder str = new StringBuilder();
-        for (TaskInfo task : tasks) {
+        for (TaskDes task : tasks) {
             str.append(getTaskMethod(task));
             str.append("\r\n");
         }
@@ -53,12 +49,12 @@ public class TaskTemplate {
             "        @CallTaskMethod\r\n" + 
             "    }";
     
-    public static final String getTaskMethod(TaskInfo task) {
+    public static final String getTaskMethod(TaskDes task) {
         return taskMethodTemplate.replaceAll("@TaskMethodName", task.getMethod().getName())
         .replaceAll("@CallTaskMethod", getCallTaskMethod(task));
     }
     
-    public static final String getCallTaskMethod(TaskInfo task) {
+    public static final String getCallTaskMethod(TaskDes task) {
         StringBuilder str = new StringBuilder();
         str.append("job.").append(task.getMethod().getName())
         .append("(");
@@ -84,9 +80,9 @@ public class TaskTemplate {
     private static final String inPipeTemplate = "    private InPipe<@E> @InPipeName = new TcpInPipe<@E>(\"@InPipeName\");";
     private static final String outPipeTemplate = "    private OutPipe<@E> @OutPipeName = new TcpOutPipe<@E>(\"@OutPipeName\");";
     
-    public static final String getInPipeVars(Set<PipeInfo> inPipes) {
+    public static final String getInPipeVars(Set<PipeDes> inPipes) {
         StringBuilder str = new StringBuilder();
-        for (PipeInfo p : inPipes) {
+        for (PipeDes p : inPipes) {
             str.append(inPipeTemplate.replaceAll("@E", p.elementType.toString().replace("$", ".").replace("class","").trim())
                                      .replaceAll("@InPipeName", p.name));
             str.append("\r\n");
@@ -97,9 +93,9 @@ public class TaskTemplate {
     
     private static final String addInPipeTemplate = "super.addInPipe(@InPipeName);";
     private static final String addOutPipeTemplate = "super.addOutPipe(@OutPipeName);";
-    public static final String addInPipes(Set<PipeInfo> inPipes) {
+    public static final String addInPipes(Set<PipeDes> inPipes) {
         StringBuilder str = new StringBuilder();
-        for (PipeInfo p : inPipes) {
+        for (PipeDes p : inPipes) {
             str.append(addInPipeTemplate.replaceAll("@InPipeName", p.name));
             str.append("\r\n");
         }
@@ -110,9 +106,9 @@ public class TaskTemplate {
         return str.toString();
     }
     
-    public static final String addOutPipes(Set<PipeInfo> outPipes) {
+    public static final String addOutPipes(Set<PipeDes> outPipes) {
         StringBuilder str = new StringBuilder();
-        for (PipeInfo p : outPipes) {
+        for (PipeDes p : outPipes) {
             str.append(addOutPipeTemplate.replaceAll("@OutPipeName", p.name));
             str.append("\r\n");
         }
@@ -122,9 +118,9 @@ public class TaskTemplate {
         return str.toString();
     }
     
-    public static final String getOutPipeVars(Set<PipeInfo> outPipes) {
+    public static final String getOutPipeVars(Set<PipeDes> outPipes) {
         StringBuilder str = new StringBuilder();
-        for (PipeInfo p : outPipes) {
+        for (PipeDes p : outPipes) {
             str.append(outPipeTemplate.replaceAll("@E", p.elementType.toString().replace("$", ".").replace("class","").trim())
                                       .replaceAll("@OutPipeName", p.name));
             str.append("\r\n");

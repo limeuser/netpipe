@@ -1,18 +1,19 @@
-package core;
+package core.generator;
 
 import java.lang.reflect.Type;
 
-public class PipeInfo {
+public class PipeDes {
     public Type elementType;
     public String name;
+    public PipeDes peer;
     
     @Override
     public boolean equals(Object o) {
-        if (o == null || !(o instanceof PipeInfo)) {
+        if (o == null || !(o instanceof PipeDes)) {
             return false;
         }
         
-        PipeInfo p = (PipeInfo) o;
+        PipeDes p = (PipeDes) o;
         return p.elementType.equals(elementType) && name.equals(p.name);
     }
     

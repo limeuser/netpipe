@@ -4,27 +4,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
 
-import msg.PipeStatus;
 import msg.TaskStatus;
-
 import cn.oasistech.agent.AgentProtocol;
 import cn.oasistech.agent.GetIdResponse;
 import cn.oasistech.agent.client.AgentAsynRpc;
 import cn.oasistech.agent.client.AgentSyncRpc;
 import cn.oasistech.util.Address;
+import cn.oasistech.util.Logger;
 import cn.oasistech.util.Tag;
 import core.InPipe;
 import core.OutPipe;
+import core.PipeStatus;
 import core.Serializer;
-import cn.oasistech.util.Logger;
 
 public abstract class TaskRunner {
     private String jobName;
     private String taskName;
     private int taskId;
-    private Timer statTimer;
     private List<Thread> workers;
     private List<InPipe<?>> ins;
     private List<OutPipe<?>> outs;
@@ -40,8 +37,6 @@ public abstract class TaskRunner {
         this.taskName = taskName;
         this.taskId = taskId;
         
-        this.statTimer = new Timer();
-        this.statTimer.schedule(new StatTask(this), 0, 1000);
         this.agentSyncRpc = new AgentSyncRpc();
         this.agentSyncRpc.start(Address.parse("tcp://127.0.0.1:6953"));
         
@@ -111,30 +106,15 @@ public abstract class TaskRunner {
     // get task running status
     public TaskStatus getStatus() {
         TaskStatus taskStatus = new TaskStatus();
-        taskStatus.setJobName(jobName);
-        taskStatus.setTaskName(taskName);
         taskStatus.setTaskId(taskId);
         taskStatus.setWorkerCount(workers.size());
         
         for (InPipe<?> in : ins) {
-            PipeStatus pipeStatus = new PipeStatus();
-            pipeStatus.setName(in.name());
-            pipeStatus.setSize(in.size());
-            pipeStatus.setInQps(in.inQps());
-            pipeStatus.setOutQps(in.outQps());
-            pipeStatus.setCapacity(in.capacity());
-            
-            taskStatus.getPipeStatus().add(pipeStatus);
+            taskStatus.getPipeStatus().put(in.name(), in.getStatus());
         }
         for (OutPipe<?> out : outs) {
             PipeStatus pipeStatus = new PipeStatus();
-            pipeStatus.setName(out.name());
-            pipeStatus.setSize(out.size());
-            pipeStatus.setInQps(out.inQps());
-            pipeStatus.setOutQps(out.outQps());
-            pipeStatus.setCapacity(out.capacity());
-            
-            taskStatus.getPipeStatus().add(pipeStatus);
+ 
         }
         
         return taskStatus;

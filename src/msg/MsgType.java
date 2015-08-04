@@ -1,6 +1,6 @@
 package msg;
 
-public enum ValueType {
+public enum MsgType {
     TLV,
     Data,
     CreateWorker,

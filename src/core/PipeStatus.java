@@ -1,18 +1,18 @@
-package msg;
+package core;
 
 public class PipeStatus {
-    private String name;
-    private int size;
-    private int capacity;
     private int inQps;
     private int outQps;
+    private int size;
+    private int capacity;
+    private boolean isConnected;
     
-    public String getName() {
-        return name;
+    public final static PipeStatus newPipeStatus() {
+        PipeStatus status = new PipeStatus();
+        status.setConnected(false);
+        return status;
     }
-    public void setName(String name) {
-        this.name = name;
-    }
+    
     public int getSize() {
         return size;
     }
@@ -36,5 +36,11 @@ public class PipeStatus {
     }
     public void setOutQps(int outQps) {
         this.outQps = outQps;
+    }
+    public boolean isConnected() {
+        return isConnected;
+    }
+    public void setConnected(boolean isConnected) {
+        this.isConnected = isConnected;
     }
 }
