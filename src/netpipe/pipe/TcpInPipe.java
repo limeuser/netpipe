@@ -6,10 +6,10 @@ import java.util.AbstractQueue;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import mjoys.io.Serializer;
 import mjoys.socket.tcp.client.SocketClient;
 import mjoys.util.Address;
 import mjoys.util.Logger;
-import mjoys.util.Serializer;
 import mjoys.util.LVFrame;
 
 public class TcpInPipe<E> implements InPipe<E> {

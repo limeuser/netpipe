@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import mjoys.io.Serializer;
 import mjoys.util.Address;
 import mjoys.util.ByteUnit;
 import mjoys.util.Logger;
-import mjoys.util.Serializer;
 
 public class TcpOutPipe<E> implements OutPipe<E> {
     private String name;

@@ -1,7 +1,7 @@
 package netpipe.pipe;
 
+import mjoys.io.Serializer;
 import mjoys.util.ClassUtil;
-import mjoys.util.Serializer;
 import cn.oasistech.util.Cfg;
 
 public class Config {
