@@ -6,11 +6,14 @@ import java.util.AbstractQueue;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import mjoys.frame.ByteBufferParser;
+import mjoys.frame.LV;
+import mjoys.io.ByteBufferInputStream;
 import mjoys.io.Serializer;
+import mjoys.io.SerializerException;
 import mjoys.socket.tcp.client.SocketClient;
 import mjoys.util.Address;
 import mjoys.util.Logger;
-import mjoys.util.LVFrame;
 
 public class TcpInPipe<E> implements InPipe<E> {
     private String name;
@@ -71,15 +74,15 @@ public class TcpInPipe<E> implements InPipe<E> {
     }
     
     @SuppressWarnings("unchecked")
-    private void doReadFrame() throws IOException, InterruptedException {
+    private void doReadFrame() throws IOException, SerializerException {
         int length = client.recv(buffer);
         if (length <= 0) {
             return;
         }
         
-        List<LVFrame> frames = LVFrame.parseLVs(ByteBuffer.wrap(buffer, 0, length));
-        for (LVFrame frame : frames) {
-            dataQueue.offer((E) serializer.decode(frame.getValue()));
+        List<LV<ByteBuffer>> lvs = ByteBufferParser.parseLVs(ByteBuffer.wrap(buffer, 0, length));
+        for (LV<ByteBuffer> lv : lvs) {
+            dataQueue.offer((E) serializer.decode(new ByteBufferInputStream(lv.body), Object.class));
             this.status.setInQps(this.status.getInQps() + 1);
         }
     }

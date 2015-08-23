@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import mjoys.io.ByteBufferOutputStream;
 import mjoys.io.Serializer;
+import mjoys.io.SerializerException;
 import mjoys.util.Address;
 import mjoys.util.ByteUnit;
 import mjoys.util.Logger;
@@ -121,11 +123,11 @@ public class TcpOutPipe<E> implements OutPipe<E> {
         
         private boolean trySend(Socket socket, E e) {
             try {
-                serializer.encode(e, outBuffer);
+                serializer.encode(e, new ByteBufferOutputStream(outBuffer));
                 outBuffer.flip();
                 socket.getOutputStream().write(outBuffer.array(), 0, outBuffer.limit());
                 return true;
-            } catch (IOException e1) {
+            } catch (Exception e1) {
                 logger.log("send data from %s to %s exception", socket.getLocalSocketAddress().toString(), socket.getRemoteSocketAddress().toString());
                 return false;
             }
