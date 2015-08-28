@@ -1,4 +1,4 @@
-package netpipe.pipe;
+package mjoys.netpipe.pipe;
 
 public @interface In {
 }

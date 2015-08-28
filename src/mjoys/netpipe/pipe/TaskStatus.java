@@ -1,4 +1,4 @@
-package netpipe.pipe;
+package mjoys.netpipe.pipe;
 
 import java.util.Map;
 import java.util.HashMap;

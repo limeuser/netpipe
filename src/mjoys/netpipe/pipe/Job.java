@@ -1,4 +1,4 @@
-package netpipe.pipe;
+package mjoys.netpipe.pipe;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -1,16 +1,16 @@
-package netpipe.pipe;
+package mjoys.netpipe.pipe;
 
 import java.nio.ByteBuffer;
 
+import mjoys.agent.Agent;
+import mjoys.agent.client.AgentAsynRpc;
+import mjoys.agent.client.AgentRpcHandler;
 import mjoys.frame.TLV;
 import mjoys.frame.TV;
 import mjoys.io.ByteBufferInputStream;
+import mjoys.netpipe.msg.MsgType;
+import mjoys.netpipe.msg.TaskMsg;
 import mjoys.util.Logger;
-import netpipe.msg.MsgType;
-import netpipe.msg.TaskMsg;
-import cn.oasistech.agent.AgentProtocol;
-import cn.oasistech.agent.client.AgentAsynRpc;
-import cn.oasistech.agent.client.AgentRpcHandler;
 
 public class TaskMsgHandler implements AgentRpcHandler<ByteBuffer> {
     private TaskRunner task;
@@ -18,15 +18,15 @@ public class TaskMsgHandler implements AgentRpcHandler<ByteBuffer> {
     
     @Override
     public void handle(AgentAsynRpc rpc, TLV<ByteBuffer> idFrame) {
-    	TV<ByteBuffer> msgFrame = AgentProtocol.parseMsgFrame(idFrame.body);
-        if (idFrame.tag != AgentProtocol.PublicService.Agent.id) {
+    	TV<ByteBuffer> msgFrame = Agent.parseMsgFrame(idFrame.body);
+        if (idFrame.tag != Agent.PublicService.Agent.id) {
            try {
         	   handleMsg(rpc, idFrame.tag, msgFrame);
            } catch (Exception e) {
         	   logger.log("serializer exception", e);
            }
         } else {
-            logger.log("agent response: %s", AgentProtocol.decodeAgentResponse(AgentProtocol.getMsgType(msgFrame.tag), new ByteBufferInputStream(msgFrame.body), rpc.getSerializer()));
+            logger.log("agent response: %s", Agent.decodeAgentResponse(Agent.getMsgType(msgFrame.tag), new ByteBufferInputStream(msgFrame.body), rpc.getSerializer()));
         }
     }
     

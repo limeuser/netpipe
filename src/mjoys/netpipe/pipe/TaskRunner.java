@@ -1,18 +1,18 @@
-package netpipe.pipe;
+package mjoys.netpipe.pipe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mjoys.agent.Agent;
+import mjoys.agent.GetIdResponse;
+import mjoys.agent.client.AgentAsynRpc;
+import mjoys.agent.client.AgentSyncRpc;
+import mjoys.agent.util.Tag;
 import mjoys.io.Serializer;
 import mjoys.util.Address;
 import mjoys.util.Logger;
-import cn.oasistech.agent.AgentProtocol;
-import cn.oasistech.agent.GetIdResponse;
-import cn.oasistech.agent.client.AgentAsynRpc;
-import cn.oasistech.agent.client.AgentSyncRpc;
-import cn.oasistech.util.Tag;
 
 public abstract class TaskRunner {
     private String jobName;
@@ -42,7 +42,7 @@ public abstract class TaskRunner {
         List<Tag> tags = new ArrayList<Tag>();
         tags.add(new Tag(Config.Job, this.jobName));
         tags.add(new Tag(Config.Task, this.taskName));
-        tags.add(new Tag(AgentProtocol.PublicTag.clienttype.name(), AgentProtocol.ClientType.asyn.name()));
+        tags.add(new Tag(Agent.PublicTag.clienttype.name(), Agent.ClientType.asyn.name()));
         this.agentAsynRpc.setTag(tags);
         
         connectTaskManager();
@@ -50,7 +50,7 @@ public abstract class TaskRunner {
     
     private void connectTaskManager() {
         while (true) {
-            GetIdResponse response = this.agentSyncRpc.getId(new Tag(AgentProtocol.PublicTag.servicename.name(), Config.DpipeManager));
+            GetIdResponse response = this.agentSyncRpc.getId(new Tag(Agent.PublicTag.servicename.name(), Config.DpipeManager));
             if (response.getIds().size() == 1) {
                 this.services.put(Config.DpipeManager, response.getIds().get(0));
                 break;
@@ -60,7 +60,7 @@ public abstract class TaskRunner {
         }
     }
     
-    protected abstract void runTask();
+    public abstract void runTask();
     
     public void createWorker() {
         Thread worker = new Thread(new Runnable() {

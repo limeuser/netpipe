@@ -1,4 +1,4 @@
-package netpipe.msg;
+package mjoys.netpipe.msg;
 
 
 public class TaskMsg {
