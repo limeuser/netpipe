@@ -32,7 +32,9 @@ public class TcpInPipe<E> implements InPipe<E> {
         this.status = PipeStatus.newPipeStatus();
     }
     
-    public boolean start(Address address) {
+    @Override
+    public boolean connect(String addr) {
+    	Address address = Address.parse(addr);
         this.dataQueue = new ConcurrentLinkedQueue<E>();
         
         this.client = new SocketClient();

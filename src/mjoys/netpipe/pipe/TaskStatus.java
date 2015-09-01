@@ -3,6 +3,8 @@ package mjoys.netpipe.pipe;
 import java.util.Map;
 import java.util.HashMap;
 
+import mjoys.util.Formater;
+
 public class TaskStatus {
     private int taskId;
     private int workerCount;
@@ -39,5 +41,10 @@ public class TaskStatus {
 
     public void setConnected(boolean isConnected) {
         this.isConnected = isConnected;
+    }
+    
+    @Override
+    public String toString() {
+    	return Formater.formatEntries("taskid", taskId, "workerCount", workerCount, "isConnected", isConnected, "pipeStatus", Formater.formatMap(pipeStatus));
     }
 }

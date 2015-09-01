@@ -1,6 +1,7 @@
 package mjoys.netpipe.pipe;
 
 import mjoys.util.Address;
+import mjoys.util.Formater;
 
 public class PipeStatus {
     private int inQps;
@@ -53,5 +54,10 @@ public class PipeStatus {
 
     public void setAddress(Address address) {
         this.address = address;
+    }
+    
+    @Override
+    public String toString() {
+    	return Formater.formatEntries("inQps", inQps, "outQps", outQps, "size", size, "capacity", capacity, "address", address.toString(), "isConnected", isConnected);
     }
 }

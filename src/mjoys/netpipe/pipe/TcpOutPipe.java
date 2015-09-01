@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import mjoys.io.ByteBufferOutputStream;
 import mjoys.io.Serializer;
-import mjoys.io.SerializerException;
 import mjoys.util.Address;
 import mjoys.util.ByteUnit;
 import mjoys.util.Logger;
@@ -40,7 +39,13 @@ public class TcpOutPipe<E> implements OutPipe<E> {
         this.name = name;
     }
     
-    public boolean start(Address address) {
+    @Override
+    public boolean bind(String addr) {
+    	Address address = Address.parse(addr);
+    	if (address == null) {
+    		return false;
+    	}
+    	
         this.boundAddress = address.toSocketAddress();
         if (this.boundAddress == null) {
             return false;
