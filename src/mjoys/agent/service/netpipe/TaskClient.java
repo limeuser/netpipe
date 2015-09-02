@@ -1,9 +1,14 @@
 package mjoys.agent.service.netpipe;
 
-import java.util.List;
+import java.util.Map;
 
 import mjoys.agent.client.AgentAsynRpc;
-import mjoys.agent.service.netpipe.msg.*;
+import mjoys.agent.service.netpipe.msg.ConnectOutPipeRequest;
+import mjoys.agent.service.netpipe.msg.GetTaskStatusRequest;
+import mjoys.agent.service.netpipe.msg.MsgType;
+import mjoys.agent.service.netpipe.msg.SetMaxQpsRequest;
+import mjoys.agent.service.netpipe.msg.SetPipeAddressRequest;
+import mjoys.agent.service.netpipe.msg.SwitchOutPipeRequest;
 import mjoys.util.Logger;
 
 public class TaskClient {
@@ -17,7 +22,7 @@ public class TaskClient {
 	public void getTaskStatus(int taskAgentId, int taskId) {
 		GetTaskStatusRequest request = new GetTaskStatusRequest();
 		request.setTaskId(taskId);
-		rpc.sendMsg(taskAgentId, MsgType.GetTaskStatus.ordinal(), request);
+		//rpc.sendMsg(taskAgentId, MsgType.GetTaskStatus.ordinal(), request);
 	}
 	
 	public void switchOutPipe(int taskAgentId, int taskId, String inPipeName, String outPipeAddress) {
@@ -37,20 +42,21 @@ public class TaskClient {
 		rpc.sendMsg(taskAgentId, MsgType.SetMaxQps.ordinal(), request);
 	}
 	
-	public void bindOutPipe(int taskAgentId, int taskId, List<String> addresses) {
-		BindOutPipeRequest request = new BindOutPipeRequest();
+	public void setPipeAddress(int taskAgentId, int taskId, Map<String, String> ins, Map<String, String> outs) {
+		SetPipeAddressRequest request = new SetPipeAddressRequest();
 		request.setTaskId(taskId);
-		request.setAddresses(addresses);
-		logger.log("agentid=%d, taskid=%d, bind out pipe:%s", taskAgentId, taskId, request.toString());
-		rpc.sendMsg(taskAgentId, MsgType.BindOutPipe.ordinal(), request);
+		request.setInPipeAddresses(ins);
+		request.setOutPipeAddresses(outs);
+		rpc.sendMsg(taskAgentId, MsgType.SetPipeAddress.ordinal(), request);
+		logger.log("set pipe address[agentid=%d, taskid=%d]:%s", taskAgentId, taskId, request.toString());
 	}
 	
-	public void connectOutPipe(int taskAgentId, int taskId, String inPipeName, String outPipeAddress) {
+	public void setPipeAddress(int taskAgentId, int taskId, String inPipeName, String outPipeAddress) {
 		ConnectOutPipeRequest request = new ConnectOutPipeRequest();
 		request.setTaskId(taskId);
 		request.setInPipeName(inPipeName);
 		request.setOutPipeAddress(outPipeAddress);
-		rpc.sendMsg(taskAgentId, MsgType.ConnectOutPipe.ordinal(), request);
+		rpc.sendMsg(taskAgentId, MsgType.SetPipeAddress.ordinal(), request);
 	}
 	
 	public void createWorker(int taskAgentId, int taskId) {

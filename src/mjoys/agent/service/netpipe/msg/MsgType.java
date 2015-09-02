@@ -6,8 +6,7 @@ public enum MsgType {
     SetMaxQps,
     SwitchOutPipe,
     GetTaskStatus,
-    BindOutPipe,
-    ConnectOutPipe,
+    SetPipeAddress,
     StartWorker,
     StopWorker;
 }

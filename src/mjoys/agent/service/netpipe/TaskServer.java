@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import mjoys.agent.Agent;
-import mjoys.agent.GetIdResponse;
 import mjoys.agent.client.AgentAsynRpc;
 import mjoys.agent.client.AgentSyncRpc;
 import mjoys.agent.util.AgentCfg;
@@ -76,11 +75,12 @@ public abstract class TaskServer {
     
     public abstract void runTask();
     
-    public void connectOutPipe(String inPipeName, String outPipeAddress) {
-    	for (InPipe<?> in : ins) {
-    		if (in.name().equals(inPipeName)) {
-    			in.connect(outPipeAddress);
-    		}
+    public void setPipeAddress(Map<String ,String> inAddresses, Map<String, String> outAddresses) {
+    	for (InPipe<?> in : this.ins) {
+    		in.connect(inAddresses.get(in.name()));
+    	}
+    	for (OutPipe<?> out : this.outs) {
+    		out.bind(outAddresses.get(out.name()));
     	}
     }
     

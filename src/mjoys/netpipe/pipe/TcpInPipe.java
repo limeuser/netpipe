@@ -1,6 +1,7 @@
 package mjoys.netpipe.pipe;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.AbstractQueue;
 import java.util.List;
@@ -38,18 +39,14 @@ public class TcpInPipe<E> implements InPipe<E> {
     @Override
     public boolean connect(String addr) {
     	Address address = Address.parse(addr);
+    	this.status.setAddress(address);
+    	
+    	this.client = new SocketClient();
+    	Thread connectThread = new Thread(new Connector());
+    	connectThread.start();
+    	
         this.dataQueue = new ConcurrentLinkedQueue<E>();
         
-        this.client = new SocketClient();
-        if (this.client.connect(address) == false) {
-            this.client = null;
-            return false;
-        }
-        
-        this.readThread = new Thread(new Reader());
-        readThread.start();
-        
-        this.status.setConnected(true);
         return true;
     }
     
@@ -58,6 +55,16 @@ public class TcpInPipe<E> implements InPipe<E> {
             this.client.disconnect();
         }
         this.status.setConnected(false);
+    }
+    
+    public class Connector implements Runnable {
+        @Override
+        public void run() {
+        	client.reconnect();
+        	status.setConnected(true);
+        	readThread = new Thread(new Reader());
+            readThread.start();
+        }
     }
     
     // io thread, read frame and push frame to queue
@@ -73,9 +80,12 @@ public class TcpInPipe<E> implements InPipe<E> {
     private void readFrame() {
         try {
             doReadFrame();
-        } catch (Exception e) {
+        } catch (SocketException e) {
             logger.log("in pipe read data exception:", e);
-        }
+            client.reconnect();
+        } catch (Exception e) {
+        	logger.log("in pipe read data exception:", e);
+		}
     }
     
     @SuppressWarnings("unchecked")

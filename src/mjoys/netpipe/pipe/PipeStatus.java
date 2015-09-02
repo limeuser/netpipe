@@ -2,6 +2,7 @@ package mjoys.netpipe.pipe;
 
 import mjoys.util.Address;
 import mjoys.util.Formater;
+import mjoys.util.StringUtil;
 
 public class PipeStatus {
     private int inQps;
@@ -58,6 +59,6 @@ public class PipeStatus {
     
     @Override
     public String toString() {
-    	return Formater.formatEntries("inQps", inQps, "outQps", outQps, "size", size, "capacity", capacity, "address", address.toString(), "isConnected", isConnected);
+    	return Formater.formatEntries("inQps", inQps, "outQps", outQps, "size", size, "capacity", capacity, "address", StringUtil.toString(address), "isConnected", isConnected);
     }
 }

@@ -51,6 +51,8 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     		return false;
     	}
     	
+    	this.status.setAddress(address);
+    	
         this.boundAddress = address.toSocketAddress();
         if (this.boundAddress == null) {
             return false;
