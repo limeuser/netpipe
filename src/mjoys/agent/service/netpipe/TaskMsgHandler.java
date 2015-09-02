@@ -40,18 +40,18 @@ public class TaskMsgHandler implements AgentRpcHandler<ByteBuffer> {
          } else if (msgFrame.tag == MsgType.DestroyWorkder.ordinal()) {
              task.destoryWorker();
          } else if (msgFrame.tag == MsgType.SetMaxQps.ordinal()) {
-             SetMaxQpsRequest setMaxQps = task.getAgentSerlizer().decode(new ByteBufferInputStream(msgFrame.body), SetMaxQpsRequest.class);
+             SetMaxQpsRequest setMaxQps = rpc.getSerializer().decode(new ByteBufferInputStream(msgFrame.body), SetMaxQpsRequest.class);
              task.setMaxQps(setMaxQps.getOutPipeName(), setMaxQps.getInPipeAddress(), setMaxQps.getQps());
          } else if (msgFrame.tag == MsgType.SwitchOutPipe.ordinal()) {
-             SwitchOutPipeRequest switchOutPipe = task.getAgentSerlizer().decode(new ByteBufferInputStream(msgFrame.body), SwitchOutPipeRequest.class);
+             SwitchOutPipeRequest switchOutPipe = rpc.getSerializer().decode(new ByteBufferInputStream(msgFrame.body), SwitchOutPipeRequest.class);
              task.switchOutPipe(switchOutPipe.getInPipeName(), switchOutPipe.getOutPipeAddress());
          } else if (msgFrame.tag == MsgType.GetTaskStatus.ordinal()) {
          	 rpc.sendMsg(id, msgFrame.tag, task.getStatus());
          } else if (msgFrame.tag == MsgType.ConnectOutPipe.ordinal()) {
-        	 ConnectOutPipeRequest request = task.getAgentSerlizer().decode(new ByteBufferInputStream(msgFrame.body), ConnectOutPipeRequest.class);
+        	 ConnectOutPipeRequest request = rpc.getSerializer().decode(new ByteBufferInputStream(msgFrame.body), ConnectOutPipeRequest.class);
         	 task.connectOutPipe(request.getInPipeName(), request.getOutPipeAddress());
          } else if (msgFrame.tag == MsgType.BindOutPipe.ordinal()) {
-        	 BindOutPipeRequest request = task.getAgentSerlizer().decode(new ByteBufferInputStream(msgFrame.body), BindOutPipeRequest.class);
+        	 BindOutPipeRequest request = rpc.getSerializer().decode(new ByteBufferInputStream(msgFrame.body), BindOutPipeRequest.class);
         	 for (int i = 0; i < task.getOuts().size(); i++) {
         		 boolean result = task.getOuts().get(i).bind(request.getAddresses().get(i));
         		 BindOutPipeResponse response = new BindOutPipeResponse();

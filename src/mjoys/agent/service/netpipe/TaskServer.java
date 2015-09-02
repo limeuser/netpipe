@@ -11,7 +11,6 @@ import mjoys.agent.client.AgentAsynRpc;
 import mjoys.agent.client.AgentSyncRpc;
 import mjoys.agent.util.AgentCfg;
 import mjoys.agent.util.Tag;
-import mjoys.io.Serializer;
 import mjoys.netpipe.pipe.InPipe;
 import mjoys.netpipe.pipe.NetPipeCfg;
 import mjoys.netpipe.pipe.OutPipe;
@@ -26,10 +25,9 @@ public abstract class TaskServer {
     private List<Thread> workers;
     private List<InPipe<?>> ins;
     private List<OutPipe<?>> outs;
-    private Serializer agentSerlizer;
     private AgentAsynRpc agentAsynRpc;
     private AgentSyncRpc agentSyncRpc;
-    private Map<String, Integer> services = new HashMap<String, Integer>();
+    private Map<String, Integer> services;
     
     private static final Logger logger = new Logger().addPrinter(System.out);
     
@@ -37,6 +35,10 @@ public abstract class TaskServer {
         this.jobName = jobName;
         this.taskName = taskName;
         this.taskId = taskId;
+        this.workers = new ArrayList<Thread>();
+        this.ins = new ArrayList<InPipe<?>>();
+        this.outs = new ArrayList<OutPipe<?>>();
+        this.services = new HashMap<String, Integer>();
         
         this.agentSyncRpc = new AgentSyncRpc();
         this.agentSyncRpc.start(Address.parse(AgentCfg.instance.getServerAddress()));
@@ -180,14 +182,7 @@ public abstract class TaskServer {
     public void setServices(Map<String, Integer> services) {
         this.services = services;
     }
-
-    public Serializer getAgentSerlizer() {
-        return agentSerlizer;
-    }
-
-    public void setAgentSerlizer(Serializer agentSerlizer) {
-        this.agentSerlizer = agentSerlizer;
-    }
+    
     public int getTaskId() {
     	return this.taskId;
     }
