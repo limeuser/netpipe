@@ -76,11 +76,13 @@ public abstract class TaskServer {
     public abstract void runTask();
     
     public void setPipeAddress(Map<String ,String> inAddresses, Map<String, String> outAddresses) {
+    	
+    	for (OutPipe<?> out : this.outs) {
+    		logger.log("bind out pipe:%s", outAddresses.get(out.name()));
+    		out.bind(outAddresses.get(out.name()));
+    	}
     	for (InPipe<?> in : this.ins) {
     		in.connect(inAddresses.get(in.name()));
-    	}
-    	for (OutPipe<?> out : this.outs) {
-    		out.bind(outAddresses.get(out.name()));
     	}
     }
     
