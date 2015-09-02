@@ -15,6 +15,10 @@ public class TaskMsgHandler implements AgentRpcHandler<ByteBuffer> {
     private TaskServer task;
     private final Logger logger = new Logger().addPrinter(System.out);
     
+    public TaskMsgHandler(TaskServer task) {
+    	this.task = task;
+    }
+    
     @Override
     public void handle(AgentAsynRpc rpc, TLV<ByteBuffer> idFrame) {
     	TV<ByteBuffer> msgFrame = Agent.parseMsgFrame(idFrame.body);

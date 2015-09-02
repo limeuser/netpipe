@@ -4,9 +4,12 @@ import java.util.List;
 
 import mjoys.agent.client.AgentAsynRpc;
 import mjoys.agent.service.netpipe.msg.*;
+import mjoys.util.Logger;
 
 public class TaskClient {
 	private AgentAsynRpc rpc;
+	private final static Logger logger = new Logger().addPrinter(System.out);
+	
 	public TaskClient(AgentAsynRpc rpc) {
 		this.rpc = rpc;
 	}
@@ -38,6 +41,7 @@ public class TaskClient {
 		BindOutPipeRequest request = new BindOutPipeRequest();
 		request.setTaskId(taskId);
 		request.setAddresses(addresses);
+		logger.log("agentid=%d, taskid=%d, bind out pipe:%s", taskAgentId, taskId, request.toString());
 		rpc.sendMsg(taskAgentId, MsgType.BindOutPipe.ordinal(), request);
 	}
 	

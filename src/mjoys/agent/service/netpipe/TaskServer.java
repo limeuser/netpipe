@@ -44,7 +44,7 @@ public abstract class TaskServer {
         this.agentSyncRpc.start(Address.parse(AgentCfg.instance.getServerAddress()));
         
         this.agentAsynRpc = new AgentAsynRpc();
-        this.agentAsynRpc.start(Address.parse(AgentCfg.instance.getServerAddress()), new TaskMsgHandler());
+        this.agentAsynRpc.start(Address.parse(AgentCfg.instance.getServerAddress()), new TaskMsgHandler(this));
         
         List<Tag> tags = new ArrayList<Tag>();
         tags.add(new Tag(NetPipeCfg.AgentTag.netpipe_job.name(), this.jobName));
