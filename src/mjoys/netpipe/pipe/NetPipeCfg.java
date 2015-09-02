@@ -11,7 +11,6 @@ public class NetPipeCfg extends Cfg{
 
 	public enum AgentTag {
 		os,
-    	netpipe_manager,
     	netpipe_job,
     	netpipe_task,
     	netpipe_taskid,

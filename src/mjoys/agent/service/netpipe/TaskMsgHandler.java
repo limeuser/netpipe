@@ -54,8 +54,10 @@ public class TaskMsgHandler implements AgentRpcHandler<ByteBuffer> {
          } else if (msgFrame.tag == MsgType.ConnectOutPipe.ordinal()) {
         	 ConnectOutPipeRequest request = rpc.getSerializer().decode(new ByteBufferInputStream(msgFrame.body), ConnectOutPipeRequest.class);
         	 task.connectOutPipe(request.getInPipeName(), request.getOutPipeAddress());
+        	 logger.log("task recv ConnectOutPipe request:%s", request.toString());
          } else if (msgFrame.tag == MsgType.BindOutPipe.ordinal()) {
         	 BindOutPipeRequest request = rpc.getSerializer().decode(new ByteBufferInputStream(msgFrame.body), BindOutPipeRequest.class);
+        	 logger.log("task recv BidOutPipe request:%s", request.toString());
         	 for (int i = 0; i < task.getOuts().size(); i++) {
         		 boolean result = task.getOuts().get(i).bind(request.getAddresses().get(i));
         		 BindOutPipeResponse response = new BindOutPipeResponse();

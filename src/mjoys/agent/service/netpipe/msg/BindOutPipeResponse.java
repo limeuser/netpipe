@@ -1,5 +1,7 @@
 package mjoys.agent.service.netpipe.msg;
 
+import mjoys.util.Formater;
+
 public class BindOutPipeResponse {
 	private int taskId;
 	private String outPipeName;
@@ -29,5 +31,10 @@ public class BindOutPipeResponse {
 	}
 	public void setResult(boolean result) {
 		this.result = result;
+	}
+	
+	@Override
+	public String toString() {
+		return Formater.formatEntries("taskid", taskId, "outpipename", outPipeName, "address", outPipeAddress, "result", result);
 	}
 }

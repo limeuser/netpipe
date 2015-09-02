@@ -53,9 +53,10 @@ public abstract class TaskServer {
         tags.add(new Tag(Agent.PublicTag.clienttype.name(), Agent.ClientType.asyn.name()));
         this.agentAsynRpc.setTag(tags);
         
-        connectService(NetPipeCfg.AgentTag.netpipe_manager.name());
+        //connectService(NetPipeCfg.AgentTag.netpipe_manager.name());
     }
     
+    /*
     private void connectService(String name) {
         while (true) {
             GetIdResponse response = this.agentSyncRpc.getId(new Tag(Agent.PublicTag.servicename.name(), name));
@@ -71,7 +72,7 @@ public abstract class TaskServer {
                 logger.log("can't find service:" + name);
             }
         }
-    }
+    }*/
     
     public abstract void runTask();
     
