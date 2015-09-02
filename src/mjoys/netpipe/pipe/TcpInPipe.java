@@ -92,6 +92,15 @@ public class TcpInPipe<E> implements InPipe<E> {
     @Override
     public E read() {
         while (true) {
+        	if (this.status.isConnected() == false) {
+        		logger.log("not connected");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ex) {
+                } 
+        		continue;
+        	}
+        	
             E e = dataQueue.poll();
             if (e != null) {
                 this.status.setOutQps(this.status.getOutQps() + 1);
@@ -99,7 +108,7 @@ public class TcpInPipe<E> implements InPipe<E> {
             }
             
             try {
-                Thread.sleep(1);
+                Thread.sleep(10);
             } catch (InterruptedException ex) {
                 logger.log("data queue take interrupted");
             } 

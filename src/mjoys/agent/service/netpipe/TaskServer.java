@@ -63,6 +63,11 @@ public abstract class TaskServer {
                 this.services.put(name, response.getIds().get(0));
                 break;
             } else {
+            	try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
                 logger.log("can't find service:" + name);
             }
         }
