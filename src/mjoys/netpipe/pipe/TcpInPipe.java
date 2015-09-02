@@ -13,6 +13,7 @@ import mjoys.io.Serializer;
 import mjoys.io.SerializerException;
 import mjoys.socket.tcp.client.SocketClient;
 import mjoys.util.Address;
+import mjoys.util.ClassUtil;
 import mjoys.util.Logger;
 
 public class TcpInPipe<E> implements InPipe<E> {
@@ -30,6 +31,8 @@ public class TcpInPipe<E> implements InPipe<E> {
     public TcpInPipe(String name) {
         this.name = name;
         this.status = PipeStatus.newPipeStatus();
+        this.status.setCapacity(20000);
+        this.serializer = ClassUtil.newInstance(NetPipeCfg.instance.getPipeSerializerClassName());
     }
     
     @Override
@@ -92,8 +95,7 @@ public class TcpInPipe<E> implements InPipe<E> {
     @Override
     public E read() {
         while (true) {
-        	if (this.status.isConnected() == false) {
-        		logger.log("not connected");
+        	if (dataQueue == null) {
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ex) {

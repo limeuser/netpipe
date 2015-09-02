@@ -1,5 +1,7 @@
 package mjoys.netpipe.pipe;
 
+import java.util.Properties;
+
 import mjoys.util.Cfg;
 
 public class NetPipeCfg extends Cfg{
@@ -14,5 +16,14 @@ public class NetPipeCfg extends Cfg{
     	netpipe_job,
     	netpipe_task,
     	netpipe_taskid,
+    }
+	
+	public enum Key {
+		serializerclass
+	}
+	
+    public String getPipeSerializerClassName() {
+        Properties p = instance.getDefaultPropertyCfg();
+        return p.getProperty(Key.serializerclass.name()).trim();
     }
 }

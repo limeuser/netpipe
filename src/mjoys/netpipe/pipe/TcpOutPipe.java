@@ -14,6 +14,7 @@ import mjoys.io.ByteBufferOutputStream;
 import mjoys.io.Serializer;
 import mjoys.util.Address;
 import mjoys.util.ByteUnit;
+import mjoys.util.ClassUtil;
 import mjoys.util.Logger;
 
 public class TcpOutPipe<E> implements OutPipe<E> {
@@ -37,6 +38,10 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     
     public TcpOutPipe(String name) {
         this.name = name;
+        this.status = PipeStatus.newPipeStatus();
+        this.status.setCapacity(20000);
+        this.dataQueue = new ConcurrentLinkedQueue<E>();
+        this.serializer = ClassUtil.newInstance(NetPipeCfg.instance.getPipeSerializerClassName());
     }
     
     @Override
@@ -59,7 +64,6 @@ public class TcpOutPipe<E> implements OutPipe<E> {
             return false;
         }
         
-        this.dataQueue = new ConcurrentLinkedQueue<E>();
         this.connections = new ArrayList<Connection>(); 
         
         this.listenThread = new Thread(new Listener());
@@ -109,6 +113,9 @@ public class TcpOutPipe<E> implements OutPipe<E> {
                     continue;
                 }
                 
+                status.setOutQps(status.getOutQps() + 1);
+                status.setSize(status.getSize() - 1);
+                
                 boolean success = trySend(conn.getSocket(), e);
                 if (success == false) {
                     close(conn.getSocket());
@@ -148,7 +155,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
         
         private void sleep() {
             try {
-                Thread.sleep(1);
+                Thread.sleep(100);
             } catch (Exception e) {
                 logger.log("out pipe io thread %s sleep is interrupted", name);
             }
@@ -157,8 +164,24 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     
     @Override
     public void write(E e) {
-        dataQueue.add(e);
-        status.setInQps(status.getInQps() + 1);
+    	while (true) {
+    		if (this.status.getSize() > this.status.getCapacity()) {
+    			sleep(1000);
+    			continue;
+    		}
+    		
+    		dataQueue.add(e);
+    		status.setInQps(status.getInQps() + 1);
+    		status.setSize(status.getSize() + 1);
+    	}
+    }
+    
+    private void sleep(int time) {
+        try {
+            Thread.sleep(time);
+        } catch (Exception e) {
+            logger.log("task write data %s sleep is interrupted", name);
+        }
     }
     
     @Override

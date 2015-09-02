@@ -17,7 +17,6 @@ public class TaskClient {
 	public void getTaskStatus(int taskAgentId, int taskId) {
 		GetTaskStatusRequest request = new GetTaskStatusRequest();
 		request.setTaskId(taskId);
-		logger.log("get task status:taskid=%d", taskId);
 		rpc.sendMsg(taskAgentId, MsgType.GetTaskStatus.ordinal(), request);
 	}
 	
