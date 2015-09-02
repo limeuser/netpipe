@@ -61,7 +61,9 @@ public class TcpInPipe<E> implements InPipe<E> {
         @Override
         public void run() {
         	logger.log("start to connect out pipe:%s", status.getAddress().toString());
-        	client.reconnect();
+        	if (!client.connect(status.getAddress())) {
+        		client.reconnect();
+        	}
         	status.setConnected(true);
         	readThread = new Thread(new Reader());
             readThread.start();
