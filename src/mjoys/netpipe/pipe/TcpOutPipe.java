@@ -61,6 +61,8 @@ public class TcpOutPipe<E> implements OutPipe<E> {
         try {
             this.boundSocket = new ServerSocket();
             boundSocket.bind(this.boundAddress);
+            this.status.setConnected(true);
+            logger.log("bind out pipe:%s", addr);
         } catch (IOException e) {
             logger.log("out pipe bind exception:", e);
             return false;

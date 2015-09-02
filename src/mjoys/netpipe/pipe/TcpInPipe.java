@@ -60,10 +60,12 @@ public class TcpInPipe<E> implements InPipe<E> {
     public class Connector implements Runnable {
         @Override
         public void run() {
+        	logger.log("start to connect out pipe:%s", status.getAddress().toString());
         	client.reconnect();
         	status.setConnected(true);
         	readThread = new Thread(new Reader());
             readThread.start();
+            logger.log("connected out pipe:%s", status.getAddress().toString());
         }
     }
     

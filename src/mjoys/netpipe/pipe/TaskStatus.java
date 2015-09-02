@@ -8,7 +8,6 @@ import mjoys.util.Formater;
 public class TaskStatus {
     private int taskId;
     private int workerCount;
-    private boolean isConnected;
     private Map<String, PipeStatus> pipeStatus = new HashMap<String, PipeStatus>();
     
     public Map<String, PipeStatus> getPipeStatus() {
@@ -34,17 +33,9 @@ public class TaskStatus {
     public void setTaskId(int taskId) {
         this.taskId = taskId;
     }
-
-    public boolean isConnected() {
-        return isConnected;
-    }
-
-    public void setConnected(boolean isConnected) {
-        this.isConnected = isConnected;
-    }
     
     @Override
     public String toString() {
-    	return Formater.formatEntries("taskid", taskId, "workerCount", workerCount, "isConnected", isConnected, "pipeStatus", Formater.formatMap(pipeStatus));
+    	return Formater.formatEntries("taskid", taskId, "workerCount", workerCount, "pipeStatus", Formater.formatMap(pipeStatus));
     }
 }

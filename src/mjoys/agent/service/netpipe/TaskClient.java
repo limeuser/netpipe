@@ -22,7 +22,7 @@ public class TaskClient {
 	public void getTaskStatus(int taskAgentId, int taskId) {
 		GetTaskStatusRequest request = new GetTaskStatusRequest();
 		request.setTaskId(taskId);
-		//rpc.sendMsg(taskAgentId, MsgType.GetTaskStatus.ordinal(), request);
+		rpc.sendMsg(taskAgentId, MsgType.GetTaskStatus.ordinal(), request);
 	}
 	
 	public void switchOutPipe(int taskAgentId, int taskId, String inPipeName, String outPipeAddress) {
