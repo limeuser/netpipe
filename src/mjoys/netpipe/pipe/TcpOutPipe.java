@@ -104,37 +104,39 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     public class Sender implements Runnable {
         @Override
         public void run() {
-            boolean slowDown = true;
-            for (Connection conn : connections) {
-                // too fast to send
-                if (conn.getCurrQps() > conn.getMaxQps()) {
-                    continue;
-                }
-                
-                E e = dataQueue.poll();
-                // queue is empty
-                if (e == null) {
-                    continue;
-                }
-                
-                status.setOutQps(status.getOutQps() + 1);
-                status.setSize(status.getSize() - 1);
-                
-                boolean success = trySend(conn.getSocket(), e);
-                if (success == false) {
-                    close(conn.getSocket());
-                    connections.remove(conn);
-                    continue;
-                }
-                
-                slowDown = false;
-                conn.incQps();
-            }
-            
-            // if all consumers reach max qps, io thread sleep 1 ms
-            if (slowDown) {
-                sleep();
-            }
+        	while (true) {
+	            boolean slowDown = true;
+	            for (Connection conn : connections) {
+	                // too fast to send
+	                if (conn.getCurrQps() > conn.getMaxQps()) {
+	                    continue;
+	                }
+	                
+	                E e = dataQueue.poll();
+	                // queue is empty
+	                if (e == null) {
+	                    continue;
+	                }
+	                
+	                status.setOutQps(status.getOutQps() + 1);
+	                status.setSize(status.getSize() - 1);
+	                
+	                boolean success = trySend(conn.getSocket(), e);
+	                if (success == false) {
+	                    close(conn.getSocket());
+	                    connections.remove(conn);
+	                    continue;
+	                }
+	                
+	                slowDown = false;
+	                conn.incQps();
+	            }
+	            
+	            // if all consumers reach max qps, io thread sleep 1 ms
+	            if (slowDown) {
+	                sleep();
+	            }
+        	}
         }
         
         private boolean trySend(Socket socket, E e) {
