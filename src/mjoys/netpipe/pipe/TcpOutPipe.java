@@ -141,10 +141,11 @@ public class TcpOutPipe<E> implements OutPipe<E> {
         
         private boolean trySend(Socket socket, E e) {
             try {
+            	outBuffer.clear();
                 serializer.encode(e, new ByteBufferOutputStream(outBuffer));
                 outBuffer.flip();
-                socket.getOutputStream().write(outBuffer.array(), 0, outBuffer.limit());
                 logger.log("out pipe send a element:%s", this.toString());
+                socket.getOutputStream().write(outBuffer.array(), 0, outBuffer.limit());
                 return true;
             } catch (Exception e1) {
                 logger.log("send data from %s to %s exception", socket.getLocalSocketAddress().toString(), socket.getRemoteSocketAddress().toString());

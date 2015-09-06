@@ -53,8 +53,8 @@ public class TaskMsgHandler implements AgentRpcHandler<ByteBuffer> {
          	 rpc.sendMsg(id, msgFrame.tag, task.getStatus());
          } else if (msgFrame.tag == MsgType.SetPipeAddress.ordinal()) {
         	 SetPipeAddressRequest request = rpc.getSerializer().decode(new ByteBufferInputStream(msgFrame.body), SetPipeAddressRequest.class);
-        	 task.setPipeAddress(request.getInPipeAddresses(), request.getOutPipeAddresses());
         	 logger.log("task recv set pipe address request:%s", request.toString());
+        	 task.setPipeAddress(request.getInPipeAddresses(), request.getOutPipeAddresses());
          }
     }
 }
