@@ -182,7 +182,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     		dataQueue.add(e);
     		status.setInQps(status.getInQps() + 1);
     		status.setSize(status.getSize() + 1);
-    		logger.log("write element to out pipe queue:%s", this.toString());
+    		logger.log("write element to out pipe queue:%s", this.name);
     		break;
     	}
     }
