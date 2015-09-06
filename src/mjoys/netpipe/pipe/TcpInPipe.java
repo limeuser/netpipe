@@ -101,6 +101,7 @@ public class TcpInPipe<E> implements InPipe<E> {
         
         List<LV<ByteBuffer>> lvs = ByteBufferParser.parseLVs(ByteBuffer.wrap(buffer, 0, length));
         for (LV<ByteBuffer> lv : lvs) {
+        	logger.log("in pipe read a element and put in queue:%s", this.toString());
             dataQueue.offer((E) serializer.decode(new ByteBufferInputStream(lv.body), Object.class));
             this.status.setInQps(this.status.getInQps() + 1);
         }
@@ -120,6 +121,7 @@ public class TcpInPipe<E> implements InPipe<E> {
             E e = dataQueue.poll();
             if (e != null) {
                 this.status.setOutQps(this.status.getOutQps() + 1);
+                logger.log("in pipe read a element from queue:%s", this.toString());
                 return e;
             }
             
@@ -150,5 +152,10 @@ public class TcpInPipe<E> implements InPipe<E> {
     @Override
     public PipeStatus getStatus() {
         return this.status;
+    }
+    
+    @Override
+    public String toString() {
+    	return this.name;
     }
 }

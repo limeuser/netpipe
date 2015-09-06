@@ -51,14 +51,6 @@ public class TaskClient {
 		logger.log("set pipe address[agentid=%d, taskid=%d]:%s", taskAgentId, taskId, request.toString());
 	}
 	
-	public void setPipeAddress(int taskAgentId, int taskId, String inPipeName, String outPipeAddress) {
-		ConnectOutPipeRequest request = new ConnectOutPipeRequest();
-		request.setTaskId(taskId);
-		request.setInPipeName(inPipeName);
-		request.setOutPipeAddress(outPipeAddress);
-		rpc.sendMsg(taskAgentId, MsgType.SetPipeAddress.ordinal(), request);
-	}
-	
 	public void createWorker(int taskAgentId, int taskId) {
 		rpc.sendMsg(taskAgentId, MsgType.CreateWorker.ordinal(), null);
 	}

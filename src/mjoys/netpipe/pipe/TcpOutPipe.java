@@ -62,6 +62,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
             this.boundSocket = new ServerSocket();
             boundSocket.bind(this.boundAddress);
             this.status.setConnected(true);
+            logger.log("bind out pipe:%s", addr);
         } catch (IOException e) {
             logger.log("out pipe bind exception:", e);
             return false;
@@ -141,6 +142,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
                 serializer.encode(e, new ByteBufferOutputStream(outBuffer));
                 outBuffer.flip();
                 socket.getOutputStream().write(outBuffer.array(), 0, outBuffer.limit());
+                logger.log("out pipe send a element:%s", this.toString());
                 return true;
             } catch (Exception e1) {
                 logger.log("send data from %s to %s exception", socket.getLocalSocketAddress().toString(), socket.getRemoteSocketAddress().toString());
@@ -169,6 +171,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     public void write(E e) {
     	while (true) {
     		if (this.status.getSize() > this.status.getCapacity()) {
+    			logger.log("write to pipe failed: queue is full");
     			sleep(1000);
     			continue;
     		}
@@ -176,6 +179,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     		dataQueue.add(e);
     		status.setInQps(status.getInQps() + 1);
     		status.setSize(status.getSize() + 1);
+    		logger.log("write element to pipe queue:%s", this.toString());
     	}
     }
     
@@ -248,5 +252,10 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     @Override
     public PipeStatus getStatus() {
         return this.status;
+    }
+    
+    @Override
+    public String toString() {
+    	return this.name;
     }
 }
