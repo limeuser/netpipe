@@ -3,7 +3,6 @@ package mjoys.agent.service.netpipe;
 import java.util.Map;
 
 import mjoys.agent.client.AgentAsynRpc;
-import mjoys.agent.service.netpipe.msg.ConnectOutPipeRequest;
 import mjoys.agent.service.netpipe.msg.GetTaskStatusRequest;
 import mjoys.agent.service.netpipe.msg.MsgType;
 import mjoys.agent.service.netpipe.msg.SetMaxQpsRequest;
@@ -23,6 +22,7 @@ public class TaskClient {
 		GetTaskStatusRequest request = new GetTaskStatusRequest();
 		request.setTaskId(taskId);
 		rpc.sendMsg(taskAgentId, MsgType.GetTaskStatus.ordinal(), request);
+		logger.log("get task status[agentid=%d, taskid=%d]", taskAgentId, taskId);
 	}
 	
 	public void switchOutPipe(int taskAgentId, int taskId, String inPipeName, String outPipeAddress) {
