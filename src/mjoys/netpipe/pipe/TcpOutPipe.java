@@ -171,7 +171,7 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     public void write(E e) {
     	while (true) {
     		if (this.status.getSize() > this.status.getCapacity()) {
-    			logger.log("write to pipe failed: queue is full");
+    			logger.log("write to out pipe queue failed: queue is full");
     			sleep(1000);
     			continue;
     		}
@@ -179,7 +179,8 @@ public class TcpOutPipe<E> implements OutPipe<E> {
     		dataQueue.add(e);
     		status.setInQps(status.getInQps() + 1);
     		status.setSize(status.getSize() + 1);
-    		logger.log("write element to pipe queue:%s", this.toString());
+    		logger.log("write element to out pipe queue:%s", this.toString());
+    		break;
     	}
     }
     
