@@ -52,7 +52,7 @@ public class TaskMsgHandler implements AgentRpcHandler<ByteBuffer> {
          } else if (msgFrame.tag == MsgType.GetTaskStatus.ordinal()) {
         	 GetTaskStatusRequest request = rpc.getSerializer().decode(new ByteBufferInputStream(msgFrame.body), GetTaskStatusRequest.class);
         	 logger.log("task recv get task status:%s", request.toString());
-         	 //rpc.sendMsg(id, msgFrame.tag, task.getStatus());
+         	 rpc.sendMsg(id, msgFrame.tag, task.getStatus());
          } else if (msgFrame.tag == MsgType.SetPipeAddress.ordinal()) {
         	 SetPipeAddressRequest request = rpc.getSerializer().decode(new ByteBufferInputStream(msgFrame.body), SetPipeAddressRequest.class);
         	 logger.log("task recv set pipe address request:%s", request.toString());
